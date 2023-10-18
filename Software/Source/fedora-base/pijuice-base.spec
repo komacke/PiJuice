@@ -7,7 +7,7 @@ License:        GPLv3+
 URL:            https://github.com/komacke/PiJuice 
 Source0:        %{name}-%{version}.tgz
 
-BuildRequires:  python, bash
+BuildRequires:  python3, bash, python3-i2c-tools, systemd-rpm-macros
 Requires:       i2c-tools, python3-i2c-tools, python3-tkinter, python3-urwid
 
 %define  debug_package %{nil}

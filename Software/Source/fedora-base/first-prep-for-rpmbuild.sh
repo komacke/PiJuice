@@ -3,8 +3,8 @@
 HERE="$(dirname "$0")"
 THIS="$(basename "$0")"
 cd "$HERE"
-if [ -n "$(outdir)" ]; then
-    RPMBUILD_HOME="$(outdir)"
+if [ -n "$COPR" ]; then 
+    RPMBUILD_HOME="$COPR"
 else
     RPMBUILD_HOME=~/rpmbuild
 fi

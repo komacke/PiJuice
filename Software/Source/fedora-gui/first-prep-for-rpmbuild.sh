@@ -3,7 +3,11 @@
 HERE="$(dirname "$0")"
 THIS="$(basename "$0")"
 cd "$HERE"
-RPMBUILD_HOME=~/rpmbuild
+if [ -n "$COPR" ]; then 
+    RPMBUILD_HOME="$COPR"
+else
+    RPMBUILD_HOME=~/rpmbuild
+fi
 PIJUICE_VERSION=$(PYTHONPATH=.. python3 -c "import pijuice; print(pijuice.__version__)")
 RPMSPEC=pijuice-gui.spec
 
