@@ -1,22 +1,19 @@
 #!/bin/bash
 
-RPMSPEC_BASE=pijuice-base
-
 HERE="$(dirname "$0")"
 THIS="$(basename "$0")"
 cd "$HERE"
-if [ -n "$COPR" ]; then 
-    RPMBUILD_HOME="$COPR"
-else
-    RPMBUILD_HOME=~/rpmbuild
-fi
-if [ ! -d $RPMBUILD_HOME ]; then
-    echo "No rpmbuild folder found. Consider running 'rpmdev-setuptree'."
-    exit 1
-fi
-RPMSPEC=$RPMSPEC_BASE.spec
+
+RPMSPEC=$(basename ./*.spec)
 if [ ! -f $RPMSPEC ]; then
     echo "No specfile named '$RPMSPEC' found."
+    exit 1
+fi
+RPMSPEC_BASE=${RPMSPEC%.spec}
+
+[ -n "$COPR" ] && RPMBUILD_HOME="$COPR" || RPMBUILD_HOME=~/rpmbuild
+if [ ! -d $RPMBUILD_HOME ]; then
+    echo "No rpmbuild folder found. Consider running 'rpmdev-setuptree'."
     exit 1
 fi
 
