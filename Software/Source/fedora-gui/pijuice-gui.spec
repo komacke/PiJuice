@@ -1,5 +1,5 @@
 Name:           pijuice-gui
-Version:        1.8
+Version:        __version__
 Release:        1%{?dist}
 Summary:        The desktop applications for the Pi-Supply PiJuice HAT
 
