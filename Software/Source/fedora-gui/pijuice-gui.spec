@@ -29,6 +29,13 @@ The basic PiJuice support is in the pijuice-base package.
 
 
 %post
+# only if upgrading
+if [ $1 -eq 2 ]; then
+    if [ -f %{_rundir}/pijuice/pijuice_tray.pid ]; then
+        pkill -F %{_rundir}/pijuice/pijuice_tray.pid
+        sudo -u pijuice /usr/bin/pijuice_tray.py &
+    fi
+fi
 
 
 %install
@@ -51,9 +58,12 @@ popd
 
 
 %preun
-if [ -f %{_rundir}/pijuice/pijuice_tray.pid ]; then
-    pkill -F %{_rundir}/pijuice/pijuice_tray.pid
-    rm %{_rundir}/pijuice/pijuice_tray.pid
+# only if uninstalling
+if [ $1 -eq 0 ]; then
+    if [ -f %{_rundir}/pijuice/pijuice_tray.pid ]; then
+        pkill -F %{_rundir}/pijuice/pijuice_tray.pid
+        rm %{_rundir}/pijuice/pijuice_tray.pid
+    fi
 fi
 
 

@@ -27,22 +27,30 @@ The dekstop applications are in the pijuice-gui package which depends on this on
 
 
 %pre
-# Create user pijuice if it does not exist
-if id -u pijuice > /dev/null 2>&1; then
-	echo "Strange. User 'pijuice' already exists"
-else
-    adduser --shell %{_sbindir}/nologin -m --home %{_sharedstatedir}/pijuice -k /dev/null --comment "" pijuice
-    usermod -a -G i2c pijuice
-	# Add default user (usually sudo user or guess) to the pijuice group
-    [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
-    usermod -a -G pijuice $POWER_USER
+# Create user pijuice if it does not exist, only on fresh install
+if [ $1 -eq 1 ]; then
+    if id -u pijuice > /dev/null 2>&1; then
+	    echo "Strange. User 'pijuice' already exists"
+    else
+        adduser --shell %{_sbindir}/nologin -m --home %{_sharedstatedir}/pijuice -k /dev/null --comment "" pijuice
+        usermod -a -G i2c pijuice
+	    # Add default user (usually sudo user or guess) to the pijuice group
+        [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+        usermod -a -G pijuice $POWER_USER
+    fi
 fi
 
 
 %post
-systemctl unmask pijuice.service
-systemctl enable pijuice.service
-systemctl restart pijuice.service
+if [ $1 -eq 1 ]; then
+    # install
+    systemctl unmask pijuice.service
+    systemctl --quiet enable pijuice.service
+    systemctl start pijuice.service
+elif [ $1 -eq 2 ]; then
+    # upgrade
+    systemctl restart pijuice.service
+fi
 
 
 %install
@@ -77,14 +85,20 @@ echo "{\"system_task\":{\"enabled\": true},\"board\":{\"general\":{\"i2c_bus\": 
 
 
 %preun
-systemctl disable pijuice.service
-systemctl stop pijuice.service
+# only if uninstalling
+if [ $1 -eq 0 ]; then
+    systemctl --quiet disable pijuice.service
+    systemctl stop pijuice.service
+fi
 
 
 %postun
-[ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
-usermod -r -G pijuice $POWER_USER
-userdel -r pijuice
+# only if uninstalling
+if [ $1 -eq 0 ]; then
+    [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+    usermod -r -G pijuice $POWER_USER
+    userdel -r pijuice
+fi
 
 
 %files
@@ -111,7 +125,7 @@ userdel -r pijuice
 %attr(4755,pijuice,pijuice) %{_bindir}/pijuice_cli64
 
 %attr(700,pijuice,pijuice) %dir %{_sharedstatedir}/pijuice
-%config %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_config.JSON
+%config(noreplace) %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_config.JSON
 
 
 %changelog
