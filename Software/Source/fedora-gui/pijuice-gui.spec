@@ -64,7 +64,6 @@ fi
 %defattr(644,root,root,-)
 %{_datadir}/pijuice/data/images
 %{_datadir}/applications/pijuice-gui.desktop
-%{_sysconfdir}/X11/xinit/xinitrc.d/36x11-pijuice_xhost
 %{_sysconfdir}/xdg/autostart/pijuice-tray.desktop
 %{_bindir}/pijuice_gui
 
@@ -73,6 +72,7 @@ fi
 %attr(4755,pijuice,pijuice) %{_bindir}/pijuice_gui64
 
 %attr(755,root,root) %{_bindir}/pijuice_tray.py
+%attr(755,root,root) %{_sysconfdir}/X11/xinit/xinitrc.d/36x11-pijuice_xhost
 
 
 %changelog

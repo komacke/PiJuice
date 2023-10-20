@@ -73,7 +73,7 @@ ln -s pijuiceboot64 pijuiceboot
 ln -s pijuice_cli64 pijuice_cli
 popd
 
-echo "{\"system_task\":{\"enabled\": true}}" > %{buildroot}%{_sharedstatedir}/pijuice/pijuice_config.JSON
+echo "{\"system_task\":{\"enabled\": true},\"board\":{\"general\":{\"i2c_bus\": 1}}}" > %{buildroot}%{_sharedstatedir}/pijuice/pijuice_config.JSON
 
 
 %preun
