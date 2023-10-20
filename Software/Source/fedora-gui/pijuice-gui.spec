@@ -33,7 +33,8 @@ The basic PiJuice support is in the pijuice-base package.
 if [ $1 -eq 2 ]; then
     if [ -f %{_rundir}/pijuice/pijuice_tray.pid ]; then
         pkill -F %{_rundir}/pijuice/pijuice_tray.pid
-        sudo -u pijuice /usr/bin/pijuice_tray.py &
+        rm -f %{_rundir}/pijuice/pijuice_tray.pid
+        DISPLAY=:0 sudo -u pijuice pijuice_tray.py >/dev/null 2>&1 &
     fi
 fi
 
@@ -62,7 +63,7 @@ popd
 if [ $1 -eq 0 ]; then
     if [ -f %{_rundir}/pijuice/pijuice_tray.pid ]; then
         pkill -F %{_rundir}/pijuice/pijuice_tray.pid
-        rm %{_rundir}/pijuice/pijuice_tray.pid
+        rm -f %{_rundir}/pijuice/pijuice_tray.pid
     fi
 fi
 
