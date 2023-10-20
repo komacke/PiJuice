@@ -1,6 +1,6 @@
 Name:           pijuice-base
 Version:        __version__
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Basic support for Pi-Supply's PiJuice HAT
 
 License:        GPLv3+
