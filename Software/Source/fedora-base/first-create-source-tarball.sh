@@ -19,12 +19,12 @@ fi
 
 PIJUICE_VERSION=$(PYTHONPATH=.. python3 -c "import pijuice; print(pijuice.__version__)")
 NAME=$(sed -n 's/^Name:\s\+\(.*\)/\1/p' $RPMSPEC)
+
 sed -i 's/^\(Version:\s\+\)__version__\s*/\1'$PIJUICE_VERSION'/' $RPMSPEC
 
 rm -f $RPMBUILD_HOME/SOURCES/$NAME-$PIJUICE_VERSION.tgz
 tar -czf $RPMBUILD_HOME/SOURCES/$NAME-$PIJUICE_VERSION.tgz --transform 's,^.,'$RPMSPEC_BASE-$PIJUICE_VERSION',' -C .. . -C ../.. ./LICENSE
 RETVAL=$?
-sed -i 's/^\(Version:\s\+\).*/\1__version__/' $RPMSPEC
 if [ $RETVAL -ne 0 ]; then
     echo "Tar failed with exit code $RETVAL."
     exit $RETVAL
