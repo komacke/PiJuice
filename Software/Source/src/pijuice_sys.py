@@ -284,6 +284,7 @@ def _LoadConfiguration():
                 bus = configData['board']['general']['i2c_bus']
         pijuice = PiJuice(bus, addr)
     except:
+        print("Failed to connect to PiJuice with: {}".format(configPath))
         sys.exit(0)
 
     try:
@@ -403,6 +404,8 @@ def main():
                         print('rtc_ds1307 module reloaded and RTC os-support OK', flush=True)
                     else:
                         print('RTC os-support not available', flush=True)
+    else:
+        print('RTC os-support not available', flush=True)
 
     if watchdogEn: _ConfigureWatchdog('ACTIVATE')
 
