@@ -353,6 +353,7 @@ def main():
                 pijuice.power.SetPowerOff(powerOffDelay)
             except ValueError:
                 pass
+        os.remove(PID_FILE)
         sys.exit(0)
 
     # First check if rtc is operational when the rtc_ds1307 module is loaded.
