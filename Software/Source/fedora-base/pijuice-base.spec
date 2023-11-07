@@ -86,7 +86,7 @@ echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"gener
 unset I2C_BUS
 # it's probably 3 so reverse to find it faster
 for f in $(ls -d /sys/class/i2c-dev/* | sort -r); do
-    TEMP_I2C_BUS=$(sed -n 's/^MINOR=\([[:digit:]]\)\+/\1/p' $f/uevent)
+    TEMP_I2C_BUS=$(sed -n 's/^MINOR=\([[:digit:]]\+\)/\1/p' $f/uevent)
     # bang it 3 times fast to wake it up
     for i in {1..3}; do
         %{_sbindir}/i2cget -y $TEMP_I2C_BUS 0x14 >/dev/null 2>&1
