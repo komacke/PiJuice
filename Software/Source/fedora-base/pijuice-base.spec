@@ -1,6 +1,6 @@
 Name:           pijuice-base
-Version:        __version__
-Release:        3%{?dist}
+Version:        1.8
+Release:        4%{?dist}
 Summary:        Basic support for Pi-Supply's PiJuice HAT
 
 License:        GPLv3+
@@ -138,8 +138,7 @@ fi
 %{_tmpfilesdir}/pijuice.conf
 %{_udevrulesdir}/98-local_i2c_group.rules
 %{_udevrulesdir}/99-i2c.rules
-%{_libdir}/python%{__default_python3_version}/site-packages/__pycache__/pijuice.cpython-312.opt-1.pyc
-%{_libdir}/python%{__default_python3_version}/site-packages/__pycache__/pijuice.cpython-312.pyc
+%{_libdir}/python%{__default_python3_version}/site-packages/__pycache__/pijuice.cpython-*
 %{_libdir}/python%{__default_python3_version}/site-packages/pijuice.py
 %{_bindir}/pijuice_log.py
 %{_bindir}/pijuice_cli
@@ -159,3 +158,6 @@ fi
 %changelog
 * Mon Oct 16 2023 Dave Koberstein <davek@komacke.com>
 - initial spec file 
+
+* Tue Sep 17 2024 Dave Koberstein <davek@komacke.com>
+- fix files second dependency on python 312 by using wildcard
