@@ -142,7 +142,7 @@ fi
 
 %attr(700,pijuice,pijuice) %dir %{_sharedstatedir}/pijuice
 %config(noreplace) %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_config.JSON
-%config(noreplace) %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_i2cbus
+%config %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_i2cbus
 
 
 %changelog
