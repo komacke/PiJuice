@@ -1,5 +1,5 @@
 Name:           pijuice-base
-Version:        1.8
+Version:        __version__
 Release:        5%{?dist}
 Summary:        Basic support for Pi-Supply's PiJuice HAT
 
