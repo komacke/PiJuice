@@ -391,7 +391,7 @@ def main():
                 if timeout <= 0:
                     print('RTC hardware not responding, trying to load rtc_ds1307 anyway', flush=True)
                 else:
-                    if pijuice.rtcAlarm.GetTime()['data']['year'] == 2000:
+                    if pijuice.rtcAlarm.GetTime()['data']['year'] <= 2000:
                         print('RTC clock was reset to 0. Possible battery loss.')
                         print('Setting RTC to current system time')
                         pijuice.rtcAlarm.SetTime(None)
