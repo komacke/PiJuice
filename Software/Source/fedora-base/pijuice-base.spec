@@ -80,7 +80,7 @@ ln -s pijuiceboot64 pijuiceboot
 ln -s pijuice_cli64 pijuice_cli
 popd
 
-echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"general\":{\"i2c_bus\": __I2C_BUS__}}}" > %{buildroot}%{_sharedstatedir}/pijuice/pijuice_config.JSON
+echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"general\":{\"i2c_bus\": 1}}}" > %{buildroot}%{_sharedstatedir}/pijuice/pijuice_config.JSON
 touch %{buildroot}%{_sharedstatedir}/pijuice/pijuice_i2cbus
 
 

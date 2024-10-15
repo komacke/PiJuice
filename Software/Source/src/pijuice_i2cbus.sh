@@ -70,7 +70,7 @@ find_bus() {
 
 save_bus() {
     echo "I2C_BUS=$I2C_BUS" > "$I2CBUS_CONFIG_FILE"
-    sed -i "s/\(\s*\"i2c_bus\":\s*\)[[:digit:]]\+/\1$I2C_BUS/" $PIJUICE_CONFIG_FILE
+    sed -i "s/\(.*\"i2c_bus\":\s*\)[[:digit:]]\+\(.*\)/\1$I2C_BUS\2/" $PIJUICE_CONFIG_FILE
 }
 
 main "$@"
