@@ -87,11 +87,9 @@ echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"gener
 I2C_BUS=$(%{_bindir}/pijuice_i2cbus.sh --find-bus)
 
 if [ -n "$I2C_BUS" ]; then
-    sed -i "s/__I2C_BUS__/$I2C_BUS/" %{_unitdir}/pijuice.service %{_sharedstatedir}/pijuice/pijuice_config.JSON*
     sed -i "s/__SYSTEM_TASK_ENABLED__/true/" %{_sharedstatedir}/pijuice/pijuice_config.JSON*
 else
     echo "WARNING: no working i2c_bus found."
-    sed -i "s/__I2C_BUS__/1/" %{_unitdir}/pijuice.service %{_sharedstatedir}/pijuice/pijuice_config.JSON*
     sed -i "s/__SYSTEM_TASK_ENABLED__/false/" %{_sharedstatedir}/pijuice/pijuice_config.JSON*
 fi
 
