@@ -1,0 +1,3 @@
+# See https://docs.fedoraproject.org/en-US/packaging-guidelines/DefaultServices/
+# for the Fedora policy.
+enable pijuice.service
