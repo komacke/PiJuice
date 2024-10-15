@@ -1,6 +1,6 @@
 Name:           pijuice-base
 Version:        1.8
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Basic support for Pi-Supply's PiJuice HAT
 
 License:        GPLv3+
@@ -69,6 +69,7 @@ cp data/98-pijuice.preset %{buildroot}%{_presetdir}
 cp src/pijuice_sys.py %{buildroot}%{_bindir}
 cp src/pijuice_cli.py %{buildroot}%{_bindir}
 cp src/pijuice_log.py %{buildroot}%{_bindir}
+cp src/pijuice_i2cbus.sh %{buildroot}%{_bindir}
 cp data/pijuice.conf %{buildroot}%{_tmpfilesdir}
 cp pijuice.py %{buildroot}%{_libdir}/python%{__default_python3_version}/site-packages
 
@@ -83,27 +84,12 @@ echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"gener
 
 
 %post
-unset I2C_BUS
-# it's probably 3 so reverse to find it faster
-for f in $(ls -d /sys/class/i2c-dev/* | sort -r); do
-    TEMP_I2C_BUS=$(sed -n 's/^MINOR=\([[:digit:]]\+\)/\1/p' $f/uevent)
-    # bang it 3 times fast to wake it up
-    for i in {1..3}; do
-        %{_sbindir}/i2cget -y $TEMP_I2C_BUS 0x14 >/dev/null 2>&1
-        RETVAL=$?
-        if [ $RETVAL -eq 0 ]; then
-            I2C_BUS=$TEMP_I2C_BUS
-            break 2
-        fi
-    done
-done
+I2C_BUS=$(%{_bindir}/pijuice_i2cbus.sh --find-bus)
 
 if [ -n "$I2C_BUS" ]; then
-    sed -i "s/__I2C_BUS__/$I2C_BUS/" %{_unitdir}/pijuice.service %{_sharedstatedir}/pijuice/pijuice_config.JSON*
     sed -i "s/__SYSTEM_TASK_ENABLED__/true/" %{_sharedstatedir}/pijuice/pijuice_config.JSON*
 else
     echo "WARNING: no working i2c_bus found."
-    sed -i "s/__I2C_BUS__/1/" %{_unitdir}/pijuice.service %{_sharedstatedir}/pijuice/pijuice_config.JSON*
     sed -i "s/__SYSTEM_TASK_ENABLED__/false/" %{_sharedstatedir}/pijuice/pijuice_config.JSON*
 fi
 
@@ -143,9 +129,11 @@ fi
 %{_bindir}/pijuice_log.py
 %{_bindir}/pijuice_cli
 %{_bindir}/pijuiceboot
+%{_bindir}/pijuice_i2cbus.sh
 
 %attr(755,root,root) %{_bindir}/pijuiceboot64
 %attr(755,root,root) %{_bindir}/pijuice_sys.py
+%attr(755,root,root) %{_bindir}/pijuice_i2cbus.sh
 
 %attr(644,pijuice,pijuice) %{_bindir}/pijuice_cli.py
 
@@ -153,9 +141,13 @@ fi
 
 %attr(700,pijuice,pijuice) %dir %{_sharedstatedir}/pijuice
 %config(noreplace) %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_config.JSON
+%config(noreplace) %attr(600,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_i2cbus
 
 
 %changelog
+* Mon Oct 14 2024 Dave Koberstein <davek@komacke.com>
+- manage i2c bus with scripts and add finding on service start. fedora 41 changed bus enumeration to be random
+
 * Mon Oct 16 2023 Dave Koberstein <davek@komacke.com>
 - initial spec file 
 
