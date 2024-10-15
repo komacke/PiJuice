@@ -81,6 +81,7 @@ ln -s pijuice_cli64 pijuice_cli
 popd
 
 echo "{\"system_task\":{\"enabled\": __SYSTEM_TASK_ENABLED__},\"board\":{\"general\":{\"i2c_bus\": __I2C_BUS__}}}" > %{buildroot}%{_sharedstatedir}/pijuice/pijuice_config.JSON
+touch %{buildroot}%{_sharedstatedir}/pijuice/pijuice_i2cbus
 
 
 %post
@@ -145,11 +146,11 @@ fi
 
 
 %changelog
-* Mon Oct 14 2024 Dave Koberstein <davek@komacke.com>
-- manage i2c bus with scripts and add finding on service start. fedora 41 changed bus enumeration to be random
-
 * Mon Oct 16 2023 Dave Koberstein <davek@komacke.com>
 - initial spec file 
 
 * Tue Sep 17 2024 Dave Koberstein <davek@komacke.com>
 - fix files second dependency on python 312 by using wildcard
+
+* Mon Oct 14 2024 Dave Koberstein <davek@komacke.com>
+- manage i2c bus with scripts and add finding on service start. fedora 41 changed bus enumeration to be random
