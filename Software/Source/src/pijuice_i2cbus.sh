@@ -45,8 +45,16 @@ wake_rtc() {
     fi
 
     if [ ! -d /sys/module/rtc_ds1307 ]; then
-        echo ds1307 0x68 >/sys/class/i2c-adapter/i2c-$I2C_BUS/new_device 2>&1
-        RETVAL=$?
+        # ugg - kernel keeps changing this. What's the generic solution?
+        if [ -d /sys/class/i2c-adapter ]; then
+            # for Fedora 41 and kernel 6.13
+            echo ds1307 0x68 >/sys/class/i2c-adapter/i2c-$I2C_BUS/new_device 2>&1
+            RETVAL=$?
+        else
+            # for Fedora 42 and kernel 6.14
+            echo ds1307 0x68 >/sys/class/i2c-dev/i2c-$I2C_BUS/device/new_device 2>&1
+            RETVAL=$?
+        fi
         if [ $RETVAL -ne 0 ]; then
             echo "WARNING: device not available on bus $I2C_BUS. Consider using --save-bus option to discover it."
         fi
