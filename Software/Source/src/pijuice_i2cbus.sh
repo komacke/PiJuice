@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 CONFIG_FOLDER="/var/lib/pijuice"
 I2CBUS_CONFIG_FILE="$CONFIG_FOLDER/pijuice_i2cbus"
@@ -62,7 +62,7 @@ wake_rtc() {
 }
 
 find_bus() {
-    for f in $(ls -d /sys/class/i2c-dev/*); do
+    for f in $(/bin/ls -d /sys/class/i2c-dev/*); do
         TEMP_I2C_BUS=$(sed -n 's/^MINOR=\([[:digit:]]\+\)/\1/p' $f/uevent)
         # bang it 3 times fast to wake it up
         for i in {1..3}; do
@@ -78,7 +78,7 @@ find_bus() {
 
 save_bus() {
     echo "I2C_BUS=$I2C_BUS" > "$I2CBUS_CONFIG_FILE"
-    sed -i "s/\(.*\"i2c_bus\":\s*\)[[:digit:]]\+\(.*\)/\1$I2C_BUS\2/" $PIJUICE_CONFIG_FILE
+    sed -i "s/\(.*\"i2c_bus\":\s*\)[[:digit:]]*\(.*\)/\1$I2C_BUS\2/" $PIJUICE_CONFIG_FILE
 }
 
 main "$@"
