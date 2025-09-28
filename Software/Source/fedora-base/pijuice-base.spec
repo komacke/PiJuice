@@ -154,3 +154,6 @@ fi
 
 * Mon Oct 14 2024 Dave Koberstein <davek@komacke.com>
 - manage i2c bus with scripts and add finding on service start. fedora 41 changed bus enumeration to be random
+
+* Sun Sep 28 2025 Dave Koberstein <davek@komacke.com>
+- bump version for some fc43 fixes. See git for details
