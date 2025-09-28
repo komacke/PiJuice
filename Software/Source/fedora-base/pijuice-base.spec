@@ -78,6 +78,7 @@ if [ $1 -eq 1 ]; then
 	    # Add default user (usually sudo user or guess) to the pijuice group
         [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
         usermod -a -G pijuice $POWER_USER
+        usermod -a -G i2c pijuice
     else
 	    echo "Strange. User 'pijuice' does not exist"
     fi
@@ -108,6 +109,10 @@ fi
 # only if uninstalling
 if [ $1 -eq 0 ]; then
     rm -Rf %{_sharedstatedir}/pijuice
+    # I guess dnf doesn't do this even though it manages users?
+    [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+    usermod -r -G pijuice $POWER_USER
+    userdel pijuice
 fi
 
 %files
