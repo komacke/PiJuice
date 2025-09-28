@@ -26,21 +26,6 @@ The dekstop applications are in the pijuice-gui package which depends on this on
 %autosetup
 
 
-%pre
-# Create user pijuice if it does not exist, only on fresh install
-if [ $1 -eq 1 ]; then
-    if id -u pijuice > /dev/null 2>&1; then
-	    echo "Strange. User 'pijuice' already exists"
-    else
-        useradd --shell %{_sbindir}/nologin -r --home %{_sharedstatedir}/pijuice --comment "" pijuice
-        usermod -a -G i2c pijuice
-	    # Add default user (usually sudo user or guess) to the pijuice group
-        [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
-        usermod -a -G pijuice $POWER_USER
-    fi
-fi
-
-
 %preun
 # only if uninstalling
 if [ $1 -eq 0 ]; then
@@ -58,6 +43,7 @@ mkdir -p %{buildroot}%{_unitdir}
 mkdir -p %{buildroot}%{_presetdir}
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_tmpfilesdir}
+mkdir -p %{buildroot}%{_sysusersdir}
 mkdir -p %{buildroot}%{_libdir}/python%{__default_python3_version}/site-packages
 
 cp -r data/firmware %{buildroot}%{_datadir}/pijuice/data
@@ -70,7 +56,8 @@ cp src/pijuice_sys.py %{buildroot}%{_bindir}
 cp src/pijuice_cli.py %{buildroot}%{_bindir}
 cp src/pijuice_log.py %{buildroot}%{_bindir}
 cp src/pijuice_i2cbus.sh %{buildroot}%{_bindir}
-cp data/pijuice.conf %{buildroot}%{_tmpfilesdir}
+cp data/pijuice.conf.tmpfiles %{buildroot}%{_tmpfilesdir}/pijuice.conf
+cp data/pijuice.conf.users %{buildroot}%{_sysusersdir}/pijuice.conf
 cp pijuice.py %{buildroot}%{_libdir}/python%{__default_python3_version}/site-packages
 
 cp bin/pijuiceboot64 %{buildroot}%{_bindir}
@@ -85,6 +72,17 @@ touch %{buildroot}%{_sharedstatedir}/pijuice/pijuice_i2cbus
 
 
 %post
+# Create sudo user to pijuice group if it does not exist, only on fresh install
+if [ $1 -eq 1 ]; then
+    if id -u pijuice > /dev/null 2>&1; then
+	    # Add default user (usually sudo user or guess) to the pijuice group
+        [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+        usermod -a -G pijuice $POWER_USER
+    else
+	    echo "Strange. User 'pijuice' does not exist"
+    fi
+fi
+
 I2C_BUS=$(%{_bindir}/pijuice_i2cbus.sh --find-bus)
 
 if [ -n "$I2C_BUS" ]; then
@@ -109,9 +107,6 @@ fi
 %postun
 # only if uninstalling
 if [ $1 -eq 0 ]; then
-    [ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
-    usermod -r -G pijuice $POWER_USER
-    userdel pijuice
     rm -Rf %{_sharedstatedir}/pijuice
 fi
 
@@ -123,6 +118,7 @@ fi
 %{_unitdir}/pijuice.service
 %{_presetdir}/98-pijuice.preset
 %{_tmpfilesdir}/pijuice.conf
+%{_sysusersdir}/pijuice.conf
 %{_udevrulesdir}/98-local_i2c_group.rules
 %{_udevrulesdir}/99-i2c.rules
 %{_libdir}/python%{__default_python3_version}/site-packages/__pycache__/pijuice.cpython-*
@@ -130,7 +126,6 @@ fi
 %{_bindir}/pijuice_log.py
 %{_bindir}/pijuice_cli
 %{_bindir}/pijuiceboot
-%{_bindir}/pijuice_i2cbus.sh
 
 %attr(755,root,root) %{_bindir}/pijuiceboot64
 %attr(755,root,root) %{_bindir}/pijuice_sys.py

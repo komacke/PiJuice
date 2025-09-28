@@ -1,0 +1,2 @@
+#Type Name    ID    GECOS                 Home directory   Shell
+u     pijuice -     "PiJuice system user" /var/lib/pijuice /usr/bin/nologin
