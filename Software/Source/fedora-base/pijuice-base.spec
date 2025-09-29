@@ -115,6 +115,13 @@ if [ $1 -eq 0 ]; then
     userdel pijuice
 fi
 
+
+%posttrans
+[ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+chown $POWER_USER %{_bindir}/pijuice_cli.py
+chown $POWER_USER %{_bindir}/pijuice_cli64
+
+
 %files
 %defattr(644,root,root,-)
 %license LICENSE
@@ -130,15 +137,13 @@ fi
 %{_libdir}/python%{__default_python3_version}/site-packages/pijuice.py
 %{_bindir}/pijuice_log.py
 %{_bindir}/pijuice_cli
+%{_bindir}/pijuice_cli.py
 %{_bindir}/pijuiceboot
 
 %attr(755,root,root) %{_bindir}/pijuiceboot64
 %attr(755,root,root) %{_bindir}/pijuice_sys.py
 %attr(755,root,root) %{_bindir}/pijuice_i2cbus.sh
-
-%attr(644,pijuice,pijuice) %{_bindir}/pijuice_cli.py
-
-%attr(4755,pijuice,pijuice) %{_bindir}/pijuice_cli64
+%attr(4755,root,root) %{_bindir}/pijuice_cli64
 
 %attr(770,pijuice,pijuice) %dir %{_sharedstatedir}/pijuice
 %config(noreplace) %attr(660,pijuice,pijuice) %{_sharedstatedir}/pijuice/pijuice_config.JSON
