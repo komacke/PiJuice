@@ -1,6 +1,6 @@
 Name:           pijuice-gui
 Version:        __version__
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        The desktop applications for the Pi-Supply PiJuice HAT
 
 License:        GPLv3+
@@ -68,7 +68,10 @@ if [ $1 -eq 0 ]; then
 fi
 
 
-%postun
+%posttrans
+[ -n "$SUDO_USER" ] && POWER_USER=$SUDO_USER || POWER_USER=$(id -un 1000)
+chown $POWER_USER %{_bindir}/pijuice_gui.py
+chown $POWER_USER %{_bindir}/pijuice_gui64
 
 
 %files
@@ -77,15 +80,17 @@ fi
 %{_datadir}/applications/pijuice-gui.desktop
 %{_sysconfdir}/xdg/autostart/pijuice-tray.desktop
 %{_bindir}/pijuice_gui
-
-%attr(644,pijuice,pijuice) %{_bindir}/pijuice_gui.py
-
-%attr(4755,pijuice,pijuice) %{_bindir}/pijuice_gui64
+%{_bindir}/pijuice_gui.py
 
 %attr(755,root,root) %{_bindir}/pijuice_tray.py
 %attr(755,root,root) %{_sysconfdir}/X11/xinit/xinitrc.d/36x11-pijuice_xhost
+%attr(4755,root,root) %{_bindir}/pijuice_gui64
 
 
 %changelog
 * Mon Oct 16 2023 Dave Koberstein <davek@komacke.com>
 - initial spec file 
+
+* Mon Oct 16 2023 Dave Koberstein <davek@komacke.com>
+- lots of updates to support fc43
+
