@@ -1980,7 +1980,7 @@ def menu(title, choices):
     for c in choices:
         if c != "":
             button = urwid.Button(c)
-            urwid.connect_signal(button, 'click', item_chosen, c)
+            urwid.connect_signal(button, 'click', item_chosen, user_args=(c,))
             #wrapped_button = urwid.Padding(urwid.AttrMap(button, None, focus_map='reversed'), width=20)
             wrapped_button = urwid.Padding(attrmap(button), width=20)
             body.append(wrapped_button)
@@ -1989,9 +1989,9 @@ def menu(title, choices):
     return urwid.ListBox(urwid.SimpleFocusListWalker(body))
 
 
-def item_chosen(button, choice):
-    callback = menu_mapping[choice]
-    callback()
+def item_chosen(button, *choice):
+        callback = menu_mapping[choice[0].get_label()]
+        callback()
 
 
 def not_implemented_yet(*args):
