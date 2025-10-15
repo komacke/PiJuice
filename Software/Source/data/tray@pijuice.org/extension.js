@@ -13,8 +13,9 @@ class PiJuiceTray extends PanelMenu.Button {
     _init() {
         super._init(0.0, 'PiJuice Tray Extension');
 
-        this._process = null;
-        this._refreshPprocess = null;
+        this._settingsProcess = null;
+        this._aboutProcess = null;
+        this._refreshProcess = null;
         this._dataInputStream = null;
         this._cancellable = null;
 
@@ -27,19 +28,19 @@ class PiJuiceTray extends PanelMenu.Button {
 
         let settingsItem = new PopupMenu.PopupMenuItem('Settings');
         settingsItem.connect('activate', () => {
-            this._settingsProcess();
+            this._settings();
         });
         this.menu.addMenuItem(settingsItem);
 
         let refreshItem = new PopupMenu.PopupMenuItem('Refresh');
         refreshItem.connect('activate', () => {
-            this._refreshProcess();
+            this._refresh();
         });
         this.menu.addMenuItem(refreshItem);
 
         let aboutItem = new PopupMenu.PopupMenuItem('About');
         aboutItem.connect('activate', () => {
-            this._aboutProcess();
+            this._about();
         });
         this.menu.addMenuItem(aboutItem);
 
@@ -53,68 +54,94 @@ class PiJuiceTray extends PanelMenu.Button {
         });
         this.menu.addMenuItem(this._statusItem);
 
-        this.refreshIntervalId = setInterval(this._refreshProcess.bind(this), 5000);
+        this.refreshIntervalId = setInterval(this._refresh.bind(this), 5000);
     }
 
-    _aboutProcess() {
-        if (this._process) {
+    _about() {
+        if (this._aboutProcess) {
             Main.notify('PiJuice Tray About', 'Process already running');
             return;
         }
 
+        let dataInputStream = null;
+        let cancellable = null;
+
+        const readOutput = () => {
+            dataInputStream.read_line_async(
+                GLib.PRIORITY_DEFAULT,
+                cancellable,
+                (stream, result) => {
+                    try {
+                        let [line] = stream.read_line_finish_utf8(result);
+
+                        if (line !== null) {
+                            // Continue reading the next line
+                            readOutput();
+                        } else {
+                            // Stream ended
+                            cleanup();
+                        }
+                    } catch (e) {
+                        if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                            log(`Error reading output: ${e.message}`);
+                        }
+                        cleanup();
+                    }
+                }
+            );
+        }
+
+        const cleanup = () => {
+            if (cancellable) {
+                cancellable.cancel();
+                cancellable = null;
+            }
+
+            if (dataInputStream) {
+                try {
+                    dataInputStream.close(null);
+                } catch (e) {
+                    // Ignore close errors
+                }
+                dataInputStream = null;
+            }
+
+            if (this._aboutProcess) {
+                try {
+                    this._aboutProcess.force_exit();
+                } catch (e) {
+                    // Ignore force_exit errors
+                }
+                this._aboutProcess = null;
+            }
+        }
+
         try {
-            this._cancellable = new Gio.Cancellable();
+            cancellable = new Gio.Cancellable();
 
             // Start the Python process
-            this._process = Gio.Subprocess.new(
+            this._aboutProcess = Gio.Subprocess.new(
                 ['/usr/bin/pijuice_tray.py', '--about'],
                 Gio.SubprocessFlags.STDOUT_PIPE
             );
 
             // Get the output stream
-            let stdout = this._process.get_stdout_pipe();
-            this._dataInputStream = new Gio.DataInputStream({
+            let stdout = this._aboutProcess.get_stdout_pipe();
+            dataInputStream = new Gio.DataInputStream({
                 base_stream: stdout,
                 close_base_stream: true
             });
 
-            this._readOutput();
+            readOutput();
 
         } catch (e) {
             Main.notify('Extension Error', `Failed to start process: ${e.message}`);
-            this._cleanup();
+            cleanup();
         }
     }
 
-    _readOutput() {
-        if (!this._dataInputStream) return;
-
-        this._dataInputStream.read_line_async(
-            GLib.PRIORITY_DEFAULT,
-            this._cancellable,
-            (stream, result) => {
-                try {
-                    let [line] = stream.read_line_finish_utf8(result);
-
-                    if (line !== null) {
-                        // Continue reading the next line
-                        this._readOutput();
-                    } else {
-                        // Stream ended
-                        this._cleanup();
-                    }
-                } catch (e) {
-                    if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                        log(`Error reading output: ${e.message}`);
-                    }
-                    this._cleanup();
-                }
-            }
-        );
-    }
-
-    _refreshProcess() {
-        if (this._refreshPprocess) {
+    _refresh() {
+        if (this._refreshProcess) {
             return;
         }
 
@@ -217,63 +244,90 @@ class PiJuiceTray extends PanelMenu.Button {
 
     }
 
-    _settingsProcess() {
-        if (this._process) {
+    _settings() {
+        if (this._settingsProcess) {
             Main.notify('PiJuice Settings', 'Process already running');
             return;
         }
 
+        let dataInputStream = null;
+        let cancellable = null;
+
+        const readOutput = () => {
+            dataInputStream.read_line_async(
+                GLib.PRIORITY_DEFAULT,
+                cancellable,
+                (stream, result) => {
+                    try {
+                        let [line] = stream.read_line_finish_utf8(result);
+
+                        if (line !== null) {
+                            // Continue reading the next line
+                            readOutput();
+                        } else {
+                            // Stream ended
+                            cleanup();
+                        }
+                    } catch (e) {
+                        if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                            log(`Error reading output: ${e.message}`);
+                        }
+                        cleanup();
+                    }
+                }
+            );
+        }
+
+        const cleanup = () => {
+            if (cancellable) {
+                cancellable.cancel();
+                cancellable = null;
+            }
+
+            if (dataInputStream) {
+                try {
+                    dataInputStream.close(null);
+                } catch (e) {
+                    // Ignore close errors
+                }
+                dataInputStream = null;
+            }
+
+            if (this._settingsProcess) {
+                try {
+                    this._settingsProcess.force_exit();
+                } catch (e) {
+                    // Ignore force_exit errors
+                }
+                this._settingsProcess = null;
+            }
+        }
+
         try {
-            this._cancellable = new Gio.Cancellable();
+            cancellable = new Gio.Cancellable();
 
             // Start the Python process
-            this._process = Gio.Subprocess.new(
+            this._settingsProcess = Gio.Subprocess.new(
                 ['/usr/bin/pijuice_gui'],
                 Gio.SubprocessFlags.STDOUT_PIPE
             );
 
             // Get the output stream
-            let stdout = this._process.get_stdout_pipe();
-            this._dataInputStream = new Gio.DataInputStream({
+            let stdout = this._settingsProcess.get_stdout_pipe();
+            dataInputStream = new Gio.DataInputStream({
                 base_stream: stdout,
                 close_base_stream: true
             });
 
-            this._readOutput();
+            readOutput();
 
         } catch (e) {
             Main.notify('Extension Error', `Failed to start process: ${e.message}`);
-            this._cleanup();
-        }
-    }
-
-    _cleanup() {
-        if (this._cancellable) {
-            this._cancellable.cancel();
-            this._cancellable = null;
-        }
-
-        if (this._dataInputStream) {
-            try {
-                this._dataInputStream.close(null);
-            } catch (e) {
-                // Ignore close errors
-            }
-            this._dataInputStream = null;
-        }
-
-        if (this._process) {
-            try {
-                this._process.force_exit();
-            } catch (e) {
-                // Ignore force_exit errors
-            }
-            this._process = null;
+            cleanup();
         }
     }
 
     destroy() {
-        this._cleanup();
         clearInterval(this.refreshIntervalId);
         super.destroy();
     }
