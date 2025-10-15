@@ -1,6 +1,6 @@
 Name:           pijuice-gui
 Version:        __version__
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        The desktop applications for the Pi-Supply PiJuice HAT
 
 License:        GPLv3+
