@@ -1,6 +1,6 @@
 Name:           pijuice-gui
 Version:        __version__
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        The desktop applications for the Pi-Supply PiJuice HAT
 
 License:        GPLv3+
@@ -42,6 +42,7 @@ fi
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/applications
+mkdir -p %{buildroot}%{_datadir}/gnome-shell/extensions/
 mkdir -p %{buildroot}%{_datadir}/pijuice/data
 mkdir -p %{buildroot}%{_sysconfdir}/X11/xinit/xinitrc.d
 mkdir -p %{buildroot}%{_sysconfdir}/xdg/autostart/
