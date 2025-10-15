@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.8.4
+Name=PiJuice Status Tray
+Comment=PiJuice status tray
+Exec=/usr/bin/env python3 /home/n9dk/code/PiJuice/Software/Source/src/pijuice_tray.py
+Type=Application
+Icon=/usr/share/pijuice/data/images/pijuice.png
+Terminal=false
+NoDisplay=false
+X-GNOME-UsesNotifications=true
