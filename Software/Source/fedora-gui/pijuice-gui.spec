@@ -42,6 +42,7 @@ fi
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}/applications
+mkdir -p %{buildroot}%{_datadir}/gnome-shell/extensions/
 mkdir -p %{buildroot}%{_datadir}/pijuice/data
 mkdir -p %{buildroot}%{_sysconfdir}/X11/xinit/xinitrc.d
 mkdir -p %{buildroot}%{_sysconfdir}/xdg/autostart/
