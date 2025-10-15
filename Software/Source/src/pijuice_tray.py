@@ -5,13 +5,13 @@ from __future__ import print_function, division
 import os
 import os.path
 import sys
+import argparse
 from signal import signal, SIGUSR1, SIGUSR2
 import json
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 from gi.repository import Gtk as gtk
-from gi.repository import GObject as gobject
 from gi.repository import GLib as glib
 from gi.repository import Gio as gio
 from gi.repository import Adw as adw
@@ -26,22 +26,31 @@ ICON_DIR = '/usr/share/pijuice/data/images'
 TRAY_PID_FILE = '/run/pijuice/pijuice_tray.pid'
 configPath = '/var/lib/pijuice/pijuice_config.JSON'
 
-class PiJuiceStatusTray(gtk.Application):
+class PiJuiceStatusTray(adw.Application):
 
     def __init__(self):
         super().__init__(application_id='org.pijuice.tray', 
                          flags=gio.ApplicationFlags.FLAGS_NONE)
         
+        self.check_args()
+
         self.window = None
         self.status_window = None
         self.refresh_err = 0
         self.current_battery_level = 0
         self.current_icon_file = None
+        self.status_text = ''
         
         # Connect application signals
         self.connect('activate', self.on_activate)
         self.connect('startup', self.on_startup)
-        
+
+    def check_args(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--about', action='store_true', help="Show 'About' popup")
+        parser.add_argument('--battery_status', action='store_true', help='Get battery status to stdout')
+        self.args = parser.parse_args()
+
     def on_startup(self, app):
         """Called when the application starts up"""
         self.init_pijuice_interface()
@@ -53,15 +62,20 @@ class PiJuiceStatusTray(gtk.Application):
         # Create actions
         self.create_actions()
         
-        # Start timers
-        glib.timeout_add(REFRESH_INTERVAL, self.refresh_status)
-        glib.timeout_add(CHECK_SIGNAL_INTERVAL, self.check_signum)
+        # Current arguments are just one and done so don't start timers
+        if not any(vars(self.args).values()):
+            glib.timeout_add(REFRESH_INTERVAL, self.refresh_status)
+            glib.timeout_add(CHECK_SIGNAL_INTERVAL, self.check_signum)
 
     def on_activate(self, app):
         """Called when the application is activated"""
         if not self.window:
             self.create_status_window()
-        self.window.present()
+
+        if self.args.about:
+            self.activate_action("about", None)
+        else:
+            self.window.present()
 
     def create_actions(self):
         """Create application actions"""
@@ -91,7 +105,7 @@ class PiJuiceStatusTray(gtk.Application):
         self.window = gtk.ApplicationWindow(application=self)
         self.window.set_title("PiJuice Status")
         self.window.set_default_size(300, 200)
-        
+
         # Create header bar
         header = gtk.HeaderBar()
         self.window.set_titlebar(header)
@@ -142,7 +156,8 @@ class PiJuiceStatusTray(gtk.Application):
         self.window.set_child(box)
         
         # Initial refresh
-        self.refresh_status()
+        if not any(vars(self.args).values()):
+            self.refresh_status()
 
     def init_pijuice_interface(self):
         """Initialize PiJuice interface"""
@@ -171,19 +186,33 @@ class PiJuiceStatusTray(gtk.Application):
         """Handle settings menu activation"""
         os.system("/usr/bin/pijuice_gui &")
 
-    def on_about_activate(self, action, param):
-        """Handle about menu activation"""
-        action.set_enabled(False)
-        
+    def about_message(self):
         sw_version, fw_version, os_version = get_versions()
         if fw_version is None:
             fw_version = "No connection to PiJuice"
             
-        message = "\n".join([
+        return "\n".join([
             f"Software version: {sw_version}",
             f"Firmware version: {fw_version}",
             f"OS version: {os_version}",
         ])
+
+    def get_battery_status(self):
+        self.init_pijuice_interface()
+        self.refresh_status()
+        print(f"Battery:{self.current_battery_level}")
+        try:
+            if self.status_text == '':
+                self.status_text = self.get_status_text(self.status)
+            print(f"Status:{self.status_text}")
+        except:
+            print(f"Status:Error reading battery status")
+
+    def on_about_activate(self, action, param):
+        """Handle about menu activation"""
+        action.set_enabled(False)
+
+        message = self.about_message()
         
         # Create about dialog
         dialog = gtk.AlertDialog(
@@ -191,10 +220,14 @@ class PiJuiceStatusTray(gtk.Application):
             message="About PiJuice",
             detail=message
         )
+        if self.args.about:
+            callback=self.on_quit_activate
+        else:
+            callback=lambda source, result: action.set_enabled(True)
         dialog.choose(
             parent=self.window,
             cancellable=None,
-            callback=lambda source, result: action.set_enabled(True)
+            callback=callback
         )
 
     def on_refresh_activate(self, action, param):
@@ -232,14 +265,14 @@ class PiJuiceStatusTray(gtk.Application):
                 self.init_pijuice_interface()
                 return True
 
-            charge = self.pijuice.status.GetChargeLevel()
+            self.charge = self.pijuice.status.GetChargeLevel()
             
-            if charge['error'] == 'NO_ERROR':
-                b_level = charge['data']
+            if self.charge['error'] == 'NO_ERROR':
+                b_level = self.charge['data']
                 self.current_battery_level = b_level
                 print(f'{b_level}%')
             else:
-                print(f"Charge level error: {charge['error']}")
+                print(f"Charge level error: {self.charge['error']}")
                 self.init_pijuice_interface()
                 return True
 
@@ -249,7 +282,7 @@ class PiJuiceStatusTray(gtk.Application):
             status = self.pijuice.status.GetStatus()
             if status['error'] == 'NO_ERROR':
                 self.status = status['data']
-                status_text = self.get_status_text(self.status)
+                self.status_text = self.get_status_text(self.status)
 
                 if self.status['battery'] == 'NOT_PRESENT':
                     if self.status['powerInput'] != 'NOT_PRESENT':
@@ -264,11 +297,11 @@ class PiJuiceStatusTray(gtk.Application):
                     b_file = ICON_DIR + '/bat-' + str((b_level//10)*10) + '.png'
             else:
                 b_file = ICON_DIR + '/connection-error.png'
-                status_text = f"Connection error: {status['error']}"
+                self.status_text = f"Connection error: {status['error']}"
 
             # Update GUI if window exists
             if self.window:
-                self.update_display(b_level, b_file, status_text)
+                self.update_display(b_level, b_file, self.status_text)
             
             self.current_icon_file = b_file
             self.refresh_err = 0
@@ -355,7 +388,13 @@ def main():
     
     # Create and run application
     app = PiJuiceStatusTray()
-    return app.run(sys.argv)
+
+    # if getting battery status, just return - don't run
+    if app.args.battery_status:
+        app.get_battery_status()
+        return
+
+    return app.run()
 
 
 if __name__ == '__main__':
