@@ -54,7 +54,7 @@ class PiJuiceTray extends PanelMenu.Button {
         });
         this.menu.addMenuItem(this._statusItem);
 
-        this.refreshIntervalId = setInterval(this._refresh.bind(this), 5000);
+        this.refreshIntervalId = setInterval(this._refresh.bind(this), 10000);
     }
 
     _about() {
