@@ -53,6 +53,7 @@ cp data/org.pijuice.gui.desktop %{buildroot}%{_datadir}/applications
 cp -r data/images %{buildroot}%{_datadir}/pijuice/data
 cp data/36x11-pijuice_xhost %{buildroot}%{_sysconfdir}/X11/xinit/xinitrc.d
 cp data/org.pijuice.tray.desktop %{buildroot}%{_datadir}/applications
+cp -r data/tray@pijuice.org %{buildroot}%{_datadir}/gnome-shell/extensions/
 pushd %{buildroot}%{_bindir}
 ln -sf pijuice_gui64 pijuice_gui
 popd
@@ -79,6 +80,7 @@ chown $POWER_USER %{_bindir}/pijuice_gui64
 %{_datadir}/pijuice/data/images
 %{_datadir}/applications/org.pijuice.gui.desktop
 %{_datadir}/applications/org.pijuice.tray.desktop
+%{_datadir}/gnome-shell/extensions/tray@pijuice.org
 %{_bindir}/pijuice_gui
 %{_bindir}/pijuice_gui.py
 
@@ -94,4 +96,3 @@ chown $POWER_USER %{_bindir}/pijuice_gui64
 * Sun Oct 12 2025 Dave Koberstein <davek@komacke.com>
 - lots of updates to support fc43
 - redo how tray runs since status tray apps are no longer supported
-
