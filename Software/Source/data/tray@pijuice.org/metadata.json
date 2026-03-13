@@ -1,0 +1,9 @@
+{
+  "name": "PiJuice Status",
+  "description": "A gnome extension to show status and actions.",
+  "uuid": "tray@pijuice.org",
+  "shell-version": [
+    "49", "50", "51"
+  ],
+  "version": 1
+}
